@@ -2,61 +2,113 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "./AuthContext";
 
-const PointsContext = createContext();
+const HistoryContext = createContext();
 
-export function PointsProvider({ children }) {
+export function HistoryProvider({ children }) {
   const { user } = useAuth();
-  const [points, setPoints] = useState(0);
+  const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function loadPoints() {
+    async function loadHistory() {
       if (!user) {
-        setPoints(0);
+        setHistory([]);
         setLoading(false);
         return;
       }
 
-      const { data } = await supabase
-        .from("profiles")
-        .select("points")
-        .eq("id", user.id)
-        .single();
+      const { data, error } = await supabase
+        .from("scans")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
 
-      setPoints(data?.points ?? 0);
+      if (error) {
+        console.error("Error loading history:", error);
+      }
+
+      const formatted = (data ?? []).map((scan) => ({
+        id: scan.id,
+        material: scan.material,
+        recyclable: scan.recyclable,
+        category: scan.category,
+        decomposition: scan.decomposition,
+        points: scan.points,
+        date: new Date(scan.created_at).toLocaleDateString(),
+      }));
+
+      setHistory(formatted);
       setLoading(false);
     }
 
-    loadPoints();
+    loadHistory();
   }, [user]);
 
-  async function addPoints(amount) {
+  async function addScan(scan) {
     if (!user) return;
 
-    const newPoints = points + amount;
+    const { data, error } = await supabase
+      .from("scans")
+      .insert({
+        user_id: user.id,
+        material: scan.material,
+        recyclable: scan.recyclable,
+        category: scan.category,
+        decomposition: scan.decomposition,
+        points: scan.points,
+      })
+      .select()
+      .single();
 
-    setPoints(newPoints);
+    if (error) {
+      console.error("Error saving scan:", error);
+      return;
+    }
 
-    await supabase
-      .from("profiles")
-      .update({ points: newPoints })
-      .eq("id", user.id);
+    const newScan = {
+      id: data.id,
+      material: data.material,
+      recyclable: data.recyclable,
+      category: data.category,
+      decomposition: data.decomposition,
+      points: data.points,
+      date: new Date(data.created_at).toLocaleDateString(),
+    };
+
+    setHistory((prev) => [newScan, ...prev]);
+  }
+
+  async function clearHistory() {
+    if (!user) return;
+
+    const { error } = await supabase
+      .from("scans")
+      .delete()
+      .eq("user_id", user.id);
+
+    if (error) {
+      console.error("Error clearing history:", error);
+      return;
+    }
+
+    setHistory([]);
   }
 
   return (
-    <PointsContext.Provider
+    <HistoryContext.Provider
       value={{
-        points,
-        addPoints,
+        history,
+        addScan,
+        clearHistory,
         loading,
       }}
     >
       {children}
-    </PointsContext.Provider>
+    </HistoryContext.Provider>
   );
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
-export function usePoints() {
-  return useContext(PointsContext);
+export function useHistory() {
+  return useContext(HistoryContext);
 }

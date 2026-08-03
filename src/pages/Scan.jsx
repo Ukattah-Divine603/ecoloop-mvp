@@ -79,16 +79,14 @@ export default function Scan() {
 
       setResult(aiResult);
 
-      addPoints(aiResult.points);
+      await addPoints(aiResult.points);
 
-      addScan({
+      await addScan({
         material: aiResult.material,
         recyclable: aiResult.recyclable,
         category: aiResult.category,
         decomposition: aiResult.decomposition,
         points: aiResult.points,
-        image: URL.createObjectURL(file),
-        scannedAt: new Date().toISOString(),
       });
 
       setAnalysisComplete(true);
