@@ -73,18 +73,16 @@ export default function History() {
                   "
                 >
                   <div className="flex items-center gap-4">
-                    <div
-                      className="
-                        w-12
-                        h-12
-                        rounded-xl
-                        bg-emerald-500/10
-                        flex
-                        items-center
-                        justify-center
-                      "
-                    >
-                      <Recycle className="text-emerald-400" />
+                    <div className="w-12 h-12 rounded-xl overflow-hidden bg-emerald-500/10 flex items-center justify-center">
+                      {scan.image_url ? (
+                        <img
+                          src={scan.image_url}
+                          alt={scan.material}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <Recycle className="text-emerald-400" />
+                      )}
                     </div>
 
                     <div>

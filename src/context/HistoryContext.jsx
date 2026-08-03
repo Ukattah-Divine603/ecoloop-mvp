@@ -34,6 +34,7 @@ export function HistoryProvider({ children }) {
         category: scan.category,
         decomposition: scan.decomposition,
         points: scan.points,
+        image_url: scan.image_url,
         date: new Date(scan.created_at).toLocaleDateString(),
       }));
 
@@ -56,6 +57,7 @@ export function HistoryProvider({ children }) {
         category: scan.category,
         decomposition: scan.decomposition,
         points: scan.points,
+        image_url: scan.image_url ?? null,
       })
       .select()
       .single();
@@ -72,6 +74,7 @@ export function HistoryProvider({ children }) {
       category: data.category,
       decomposition: data.decomposition,
       points: data.points,
+      image_url: data.image_url,
       date: new Date(data.created_at).toLocaleDateString(),
     };
 

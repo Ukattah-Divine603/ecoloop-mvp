@@ -2,10 +2,12 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import { usePoints } from "../context/PointsContext";
+import { useAuth } from "../context/AuthContext";
 import DashboardLayout from "../layouts/DashboardLayout";
 import { Upload, ScanSearch, Leaf, Award } from "lucide-react";
 import { useHistory } from "../context/HistoryContext";
 import { analyzeWasteImage } from "../services/gemini";
+import { supabase } from "../lib/supabase";
 
 const fileToBase64 = (file) =>
   new Promise((resolve, reject) => {
@@ -24,6 +26,7 @@ const fileToBase64 = (file) =>
 export default function Scan() {
   const { addPoints } = usePoints();
   const { addScan } = useHistory();
+  const { user } = useAuth();
 
   const [image, setImage] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -38,6 +41,7 @@ export default function Scan() {
     "Calculating Eco Points...",
     "Finalizing Analysis...",
   ];
+
   const handleImage = async (e) => {
     const file = e.target.files[0];
 
@@ -79,6 +83,28 @@ export default function Scan() {
 
       setResult(aiResult);
 
+      // Upload image to Supabase Storage
+      let imageUrl = null;
+
+      if (user) {
+        const fileExt = file.name.split(".").pop();
+        const filePath = `${user.id}/${Date.now()}.${fileExt}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("scan-images")
+          .upload(filePath, file);
+
+        if (uploadError) {
+          console.error("Image upload error:", uploadError);
+        } else {
+          const { data: publicUrlData } = supabase.storage
+            .from("scan-images")
+            .getPublicUrl(filePath);
+
+          imageUrl = publicUrlData.publicUrl;
+        }
+      }
+
       await addPoints(aiResult.points);
 
       await addScan({
@@ -87,6 +113,7 @@ export default function Scan() {
         category: aiResult.category,
         decomposition: aiResult.decomposition,
         points: aiResult.points,
+        image_url: imageUrl,
       });
 
       setAnalysisComplete(true);
