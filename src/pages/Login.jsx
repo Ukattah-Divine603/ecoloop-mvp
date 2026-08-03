@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import { Leaf, Recycle, Award } from "lucide-react";
+import { Leaf, Recycle, Award, Eye, EyeOff } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 import { motion } from "framer-motion";
 
@@ -19,6 +19,8 @@ export default function Login() {
   const [email, setEmail] = useState("");
 
   const [password, setPassword] = useState("");
+
+  const [showPassword, setShowPassword] = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -122,14 +124,24 @@ export default function Login() {
               className="w-full bg-white/5 rounded-xl px-4 py-3"
             />
 
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full bg-white/5 rounded-xl px-4 py-3"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full bg-white/5 rounded-xl px-4 py-3 pr-12"
+              />
+
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
 
             <button
               disabled={loading}

@@ -2,7 +2,7 @@ import { useState } from "react";
 
 import { Link, useNavigate } from "react-router-dom";
 
-import { Leaf, Recycle, Award } from "lucide-react";
+import { Leaf, Recycle, Award, Eye, EyeOff } from "lucide-react";
 
 import { FcGoogle } from "react-icons/fc";
 
@@ -25,6 +25,10 @@ export default function Signup() {
     password: "",
     confirmPassword: "",
   });
+
+  const [showPassword, setShowPassword] = useState(false);
+
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   function update(e) {
     setForm({
@@ -114,23 +118,43 @@ export default function Signup() {
               className="w-full p-4 rounded-xl bg-white/5"
             />
 
-            <input
-              name="password"
-              type="password"
-              value={form.password}
-              onChange={update}
-              placeholder="Password"
-              className="w-full p-4 rounded-xl bg-white/5"
-            />
+            <div className="relative">
+              <input
+                name="password"
+                type={showPassword ? "text" : "password"}
+                value={form.password}
+                onChange={update}
+                placeholder="Password"
+                className="w-full p-4 rounded-xl bg-white/5 pr-12"
+              />
 
-            <input
-              name="confirmPassword"
-              type="password"
-              value={form.confirmPassword}
-              onChange={update}
-              placeholder="Confirm Password"
-              className="w-full p-4 rounded-xl bg-white/5"
-            />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+
+            <div className="relative">
+              <input
+                name="confirmPassword"
+                type={showConfirmPassword ? "text" : "password"}
+                value={form.confirmPassword}
+                onChange={update}
+                placeholder="Confirm Password"
+                className="w-full p-4 rounded-xl bg-white/5 pr-12"
+              />
+
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword((prev) => !prev)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+              >
+                {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
 
             <button
               disabled={loading}
