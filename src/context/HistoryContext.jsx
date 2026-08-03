@@ -1,48 +1,62 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
+import { supabase } from "../lib/supabase";
+import { useAuth } from "./AuthContext";
 
-const HistoryContext = createContext();
+const PointsContext = createContext();
 
-export function HistoryProvider({ children }) {
-  const [history, setHistory] = useState(() => {
-    const savedHistory = localStorage.getItem("ecoloop-history");
+export function PointsProvider({ children }) {
+  const { user } = useAuth();
+  const [points, setPoints] = useState(0);
+  const [loading, setLoading] = useState(true);
 
-    return savedHistory ? JSON.parse(savedHistory) : [];
-  });
+  useEffect(() => {
+    async function loadPoints() {
+      if (!user) {
+        setPoints(0);
+        setLoading(false);
+        return;
+      }
 
-  const addScan = (scan) => {
-    const newScan = {
-      id: Date.now(),
-      date: new Date().toLocaleString(),
-      ...scan,
-    };
+      const { data } = await supabase
+        .from("profiles")
+        .select("points")
+        .eq("id", user.id)
+        .single();
 
-    const updatedHistory = [newScan, ...history];
+      setPoints(data?.points ?? 0);
+      setLoading(false);
+    }
 
-    setHistory(updatedHistory);
+    loadPoints();
+  }, [user]);
 
-    localStorage.setItem("ecoloop-history", JSON.stringify(updatedHistory));
-  };
+  async function addPoints(amount) {
+    if (!user) return;
 
-  const clearHistory = () => {
-    setHistory([]);
+    const newPoints = points + amount;
 
-    localStorage.removeItem("ecoloop-history");
-  };
+    setPoints(newPoints);
+
+    await supabase
+      .from("profiles")
+      .update({ points: newPoints })
+      .eq("id", user.id);
+  }
 
   return (
-    <HistoryContext.Provider
+    <PointsContext.Provider
       value={{
-        history,
-        addScan,
-        clearHistory,
+        points,
+        addPoints,
+        loading,
       }}
     >
       {children}
-    </HistoryContext.Provider>
+    </PointsContext.Provider>
   );
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
-export function useHistory() {
-  return useContext(HistoryContext);
+export function usePoints() {
+  return useContext(PointsContext);
 }

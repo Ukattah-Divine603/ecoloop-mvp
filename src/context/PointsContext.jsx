@@ -1,41 +1,58 @@
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
+import { supabase } from "../lib/supabase";
+import { useAuth } from "./AuthContext";
 
 const PointsContext = createContext();
 
 export function PointsProvider({ children }) {
-  const [points, setPoints] = useState(() => {
-    const saved = localStorage.getItem("ecoloop_points");
+  const { user } = useAuth();
+  const [points, setPoints] = useState(0);
+  const [loading, setLoading] = useState(true);
 
-    return saved ? JSON.parse(saved) : 0;
-  });
+  useEffect(() => {
+    async function loadPoints() {
+      if (!user) {
+        setPoints(0);
+        setLoading(false);
+        return;
+      }
 
-  const addPoints = (amount) => {
-    setPoints((prev) => {
-      const updated = prev + amount;
+      const { data } = await supabase
+        .from("profiles")
+        .select("points")
+        .eq("id", user.id)
+        .single();
 
-      localStorage.setItem("ecoloop_points", JSON.stringify(updated));
+      setPoints(data?.points ?? 0);
+      setLoading(false);
+    }
 
-      return updated;
-    });
-  };
+    loadPoints();
+  }, [user]);
 
-  const resetPoints = () => {
-    localStorage.removeItem("ecoloop_points");
+  async function addPoints(amount) {
+    if (!user) return;
 
-    setPoints(0);
-  };
+    const newPoints = points + amount;
 
-  const value = useMemo(
-    () => ({
-      points,
-      addPoints,
-      resetPoints,
-    }),
-    [points],
-  );
+    setPoints(newPoints);
+
+    await supabase
+      .from("profiles")
+      .update({ points: newPoints })
+      .eq("id", user.id);
+  }
 
   return (
-    <PointsContext.Provider value={value}>{children}</PointsContext.Provider>
+    <PointsContext.Provider
+      value={{
+        points,
+        addPoints,
+        loading,
+      }}
+    >
+      {children}
+    </PointsContext.Provider>
   );
 }
 
