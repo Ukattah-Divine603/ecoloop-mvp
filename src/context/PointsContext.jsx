@@ -7,27 +7,30 @@ const PointsContext = createContext();
 export function PointsProvider({ children }) {
   const { user } = useAuth();
   const [points, setPoints] = useState(0);
+  const [avatarUrl, setAvatarUrl] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function loadPoints() {
+    async function loadProfile() {
       if (!user) {
         setPoints(0);
+        setAvatarUrl(null);
         setLoading(false);
         return;
       }
 
       const { data } = await supabase
         .from("profiles")
-        .select("points")
+        .select("points, avatar_url")
         .eq("id", user.id)
         .single();
 
       setPoints(data?.points ?? 0);
+      setAvatarUrl(data?.avatar_url ?? null);
       setLoading(false);
     }
 
-    loadPoints();
+    loadProfile();
   }, [user]);
 
   async function addPoints(amount) {
@@ -43,11 +46,44 @@ export function PointsProvider({ children }) {
       .eq("id", user.id);
   }
 
+  async function updateAvatar(file) {
+    if (!user) return null;
+
+    const fileExt = file.name.split(".").pop();
+    const filePath = `${user.id}/avatar.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("avatars")
+      .upload(filePath, file, { upsert: true });
+
+    if (uploadError) {
+      console.error("Avatar upload error:", uploadError);
+      return null;
+    }
+
+    const { data: publicUrlData } = supabase.storage
+      .from("avatars")
+      .getPublicUrl(filePath);
+
+    const url = `${publicUrlData.publicUrl}?t=${Date.now()}`;
+
+    await supabase
+      .from("profiles")
+      .update({ avatar_url: url })
+      .eq("id", user.id);
+
+    setAvatarUrl(url);
+
+    return url;
+  }
+
   return (
     <PointsContext.Provider
       value={{
         points,
         addPoints,
+        avatarUrl,
+        updateAvatar,
         loading,
       }}
     >
