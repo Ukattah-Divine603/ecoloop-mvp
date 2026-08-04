@@ -11,13 +11,12 @@ import { usePoints } from "../context/PointsContext";
 import { useAuth } from "../context/AuthContext";
 
 export default function Sidebar() {
-  const { avatarUrl } = usePoints();
+  const { avatarUrl, fullName } = usePoints();
   const { user } = useAuth();
 
-  const fullName =
-    user?.user_metadata?.full_name || user?.email?.split("@")[0] || "User";
+  const displayName = fullName || user?.email?.split("@")[0] || "User";
 
-  const initial = fullName.charAt(0).toUpperCase();
+  const initial = displayName.charAt(0).toUpperCase();
 
   const links = [
     {
@@ -54,6 +53,9 @@ export default function Sidebar() {
       md:flex
       flex-col
       w-72
+      h-screen
+      sticky
+      top-0
       border-r
       border-white/10
       bg-black/20
@@ -68,7 +70,7 @@ export default function Sidebar() {
         </div>
       </div>
 
-      <nav className="flex-1 p-4 space-y-2">
+      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
         {links.map((link) => {
           const Icon = link.icon;
 
@@ -99,7 +101,7 @@ export default function Sidebar() {
 
       <NavLink
         to="/profile"
-        className="flex items-center gap-3 p-4 border-t border-white/10 hover:bg-white/5 transition"
+        className="flex items-center gap-3 p-4 border-t border-white/10 hover:bg-white/5 transition flex-shrink-0"
       >
         <div className="w-10 h-10 rounded-full overflow-hidden bg-emerald-500 flex items-center justify-center font-bold text-black flex-shrink-0">
           {avatarUrl ? (
@@ -114,7 +116,7 @@ export default function Sidebar() {
         </div>
 
         <div className="min-w-0">
-          <p className="font-medium truncate">{fullName}</p>
+          <p className="font-medium truncate">{displayName}</p>
           <p className="text-xs text-gray-500 truncate">{user?.email}</p>
         </div>
       </NavLink>

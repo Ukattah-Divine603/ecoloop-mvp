@@ -10,7 +10,7 @@ import toast from "react-hot-toast";
 
 export default function Profile() {
   const { user, logout } = useAuth();
-  const { points, avatarUrl, updateAvatar } = usePoints();
+  const { points, avatarUrl, updateAvatar, fullName } = usePoints();
   const { history } = useHistory();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
@@ -19,10 +19,9 @@ export default function Profile() {
   const level = getLevel(points);
   const progress = getProgress(points);
 
-  const fullName =
-    user?.user_metadata?.full_name || user?.email?.split("@")[0] || "User";
+  const displayName = fullName || user?.email?.split("@")[0] || "User";
 
-  const initial = fullName.charAt(0).toUpperCase();
+  const initial = displayName.charAt(0).toUpperCase();
 
   async function handleLogout() {
     await logout();
@@ -94,7 +93,7 @@ export default function Profile() {
             </div>
 
             <div>
-              <h2 className="text-2xl font-bold">{fullName}</h2>
+              <h2 className="text-2xl font-bold">{displayName}</h2>
 
               <div className="flex items-center gap-2 text-gray-400 mt-1">
                 <Mail size={16} />

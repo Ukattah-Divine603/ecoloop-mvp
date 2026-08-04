@@ -9,16 +9,15 @@ import { getLevel, getProgress } from "../utils/level";
 import { Leaf, Award, TrendingUp, Recycle, ArrowUpRight } from "lucide-react";
 
 export default function Dashboard() {
-  const { points, avatarUrl } = usePoints();
+  const { points, avatarUrl, fullName } = usePoints();
 
   const { history } = useHistory();
 
   const { user } = useAuth();
 
-  const fullName =
-    user?.user_metadata?.full_name || user?.email?.split("@")[0] || "User";
+  const displayName = fullName || user?.email?.split("@")[0] || "User";
 
-  const initial = fullName.charAt(0).toUpperCase();
+  const initial = displayName.charAt(0).toUpperCase();
 
   const scans = history.length;
 
@@ -60,7 +59,9 @@ export default function Dashboard() {
                 )}
               </div>
 
-              <h1 className="text-4xl font-bold">Welcome Back, {fullName}</h1>
+              <h1 className="text-4xl font-bold">
+                Welcome Back, {displayName}
+              </h1>
             </div>
 
             <p className="text-gray-300">

@@ -47,7 +47,7 @@ export default function Signup() {
     try {
       setLoading(true);
 
-      await signup(form.email, form.password);
+      await signup(form.email, form.password, form.name);
 
       toast.success("Account created. Check your email ✨");
 
