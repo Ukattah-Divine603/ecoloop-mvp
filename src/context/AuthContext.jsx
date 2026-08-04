@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useRef } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 
 const AuthContext = createContext();
@@ -6,7 +6,6 @@ const AuthContext = createContext();
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const currentUserId = useRef(null);
 
   useEffect(() => {
     async function loadUser() {
@@ -14,9 +13,7 @@ export function AuthProvider({ children }) {
         data: { session },
       } = await supabase.auth.getSession();
 
-      const sessionUser = session?.user ?? null;
-      currentUserId.current = sessionUser?.id ?? null;
-      setUser(sessionUser);
+      setUser(session?.user ?? null);
       setLoading(false);
     }
 
@@ -25,15 +22,7 @@ export function AuthProvider({ children }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      const nextUser = session?.user ?? null;
-      const nextId = nextUser?.id ?? null;
-
-      // Only update state if the actual logged-in user changed —
-      // prevents refetch loops from token refresh / focus events
-      if (nextId !== currentUserId.current) {
-        currentUserId.current = nextId;
-        setUser(nextUser);
-      }
+      setUser(session?.user ?? null);
     });
 
     return () => subscription.unsubscribe();
@@ -76,7 +65,6 @@ export function AuthProvider({ children }) {
   async function logout() {
     await supabase.auth.signOut();
     setUser(null);
-    currentUserId.current = null;
   }
 
   return (

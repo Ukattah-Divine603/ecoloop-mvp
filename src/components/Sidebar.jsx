@@ -7,18 +7,8 @@ import {
   User,
   Leaf,
 } from "lucide-react";
-import { usePoints } from "../context/PointsContext";
-import { useAuth } from "../context/AuthContext";
 
 export default function Sidebar() {
-  const { avatarUrl } = usePoints();
-  const { user } = useAuth();
-
-  const fullName =
-    user?.user_metadata?.full_name || user?.email?.split("@")[0] || "User";
-
-  const initial = fullName.charAt(0).toUpperCase();
-
   const links = [
     {
       name: "Dashboard",
@@ -96,28 +86,6 @@ export default function Sidebar() {
           );
         })}
       </nav>
-
-      <NavLink
-        to="/profile"
-        className="flex items-center gap-3 p-4 border-t border-white/10 hover:bg-white/5 transition"
-      >
-        <div className="w-10 h-10 rounded-full overflow-hidden bg-emerald-500 flex items-center justify-center font-bold text-black flex-shrink-0">
-          {avatarUrl ? (
-            <img
-              src={avatarUrl}
-              alt="Profile"
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            initial
-          )}
-        </div>
-
-        <div className="min-w-0">
-          <p className="font-medium truncate">{fullName}</p>
-          <p className="text-xs text-gray-500 truncate">{user?.email}</p>
-        </div>
-      </NavLink>
     </aside>
   );
 }

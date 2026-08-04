@@ -1,20 +1,17 @@
-import { useRef, useState } from "react";
 import DashboardLayout from "../layouts/DashboardLayout";
 import { useAuth } from "../context/AuthContext";
 import { usePoints } from "../context/PointsContext";
 import { useHistory } from "../context/HistoryContext";
 import { getLevel, getProgress } from "../utils/level";
-import { LogOut, Mail, Recycle, Leaf, TrendingUp, Camera } from "lucide-react";
+import { LogOut, Mail, Recycle, Leaf, TrendingUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
 export default function Profile() {
   const { user, logout } = useAuth();
-  const { points, avatarUrl, updateAvatar } = usePoints();
+  const { points } = usePoints();
   const { history } = useHistory();
   const navigate = useNavigate();
-  const fileInputRef = useRef(null);
-  const [uploading, setUploading] = useState(false);
 
   const level = getLevel(points);
   const progress = getProgress(points);
@@ -28,24 +25,6 @@ export default function Profile() {
     await logout();
     toast.success("Logged out");
     navigate("/login");
-  }
-
-  async function handleAvatarChange(e) {
-    const file = e.target.files[0];
-
-    if (!file) return;
-
-    setUploading(true);
-
-    const url = await updateAvatar(file);
-
-    setUploading(false);
-
-    if (url) {
-      toast.success("Profile picture updated");
-    } else {
-      toast.error("Failed to update profile picture");
-    }
   }
 
   return (
@@ -63,34 +42,8 @@ export default function Profile() {
         {/* PROFILE CARD */}
         <div className="bg-white/5 border border-white/10 rounded-3xl p-8">
           <div className="flex items-center gap-6">
-            <div className="relative group">
-              <div className="w-20 h-20 rounded-full overflow-hidden bg-emerald-500 flex items-center justify-center text-3xl font-bold text-black">
-                {avatarUrl ? (
-                  <img
-                    src={avatarUrl}
-                    alt="Profile"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  initial
-                )}
-              </div>
-
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
-                className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-emerald-500 border-2 border-zinc-950 flex items-center justify-center hover:bg-emerald-400 transition"
-              >
-                <Camera size={14} className="text-black" />
-              </button>
-
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                hidden
-                onChange={handleAvatarChange}
-              />
+            <div className="w-20 h-20 rounded-2xl bg-emerald-500 flex items-center justify-center text-3xl font-bold text-black">
+              {initial}
             </div>
 
             <div>
@@ -100,10 +53,6 @@ export default function Profile() {
                 <Mail size={16} />
                 <span>{user?.email}</span>
               </div>
-
-              {uploading && (
-                <p className="text-emerald-400 text-sm mt-2">Uploading...</p>
-              )}
             </div>
           </div>
         </div>
