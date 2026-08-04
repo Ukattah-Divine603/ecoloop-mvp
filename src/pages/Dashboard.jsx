@@ -2,15 +2,23 @@ import DashboardLayout from "../layouts/DashboardLayout";
 
 import { usePoints } from "../context/PointsContext";
 import { useHistory } from "../context/HistoryContext";
+import { useAuth } from "../context/AuthContext";
 
 import { getLevel, getProgress } from "../utils/level";
 
 import { Leaf, Award, TrendingUp, Recycle, ArrowUpRight } from "lucide-react";
 
 export default function Dashboard() {
-  const { points } = usePoints();
+  const { points, avatarUrl } = usePoints();
 
   const { history } = useHistory();
+
+  const { user } = useAuth();
+
+  const fullName =
+    user?.user_metadata?.full_name || user?.email?.split("@")[0] || "User";
+
+  const initial = fullName.charAt(0).toUpperCase();
 
   const scans = history.length;
 
@@ -39,7 +47,21 @@ export default function Dashboard() {
           "
         >
           <div className="max-w-2xl">
-            <h1 className="text-4xl font-bold mb-3">Welcome Back, Divine</h1>
+            <div className="flex items-center gap-4 mb-3">
+              <div className="w-14 h-14 rounded-full overflow-hidden bg-emerald-500 flex items-center justify-center font-bold text-black text-xl flex-shrink-0">
+                {avatarUrl ? (
+                  <img
+                    src={avatarUrl}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  initial
+                )}
+              </div>
+
+              <h1 className="text-4xl font-bold">Welcome Back, {fullName}</h1>
+            </div>
 
             <p className="text-gray-300">
               Every item you scan contributes to a cleaner environment and
@@ -50,7 +72,6 @@ export default function Dashboard() {
 
         {/* STATS */}
         <section className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Eco Points */}
           <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
             <div className="flex items-center justify-between">
               <Leaf className="text-emerald-400" />
@@ -63,7 +84,6 @@ export default function Dashboard() {
             <p className="text-4xl font-bold mt-2">{points}</p>
           </div>
 
-          {/* Level */}
           <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
             <div className="flex items-center justify-between">
               <TrendingUp className="text-blue-400" />
@@ -76,7 +96,6 @@ export default function Dashboard() {
             <p className="text-2xl font-bold mt-2">{level.name}</p>
           </div>
 
-          {/* Scans */}
           <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
             <div className="flex items-center justify-between">
               <Recycle className="text-emerald-400" />
@@ -89,7 +108,6 @@ export default function Dashboard() {
             <p className="text-4xl font-bold mt-2">{scans}</p>
           </div>
 
-          {/* Badges */}
           <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
             <div className="flex items-center justify-between">
               <Award className="text-yellow-400" />
