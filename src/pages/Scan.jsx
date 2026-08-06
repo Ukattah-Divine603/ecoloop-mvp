@@ -1,13 +1,21 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import { usePoints } from "../context/PointsContext";
 import { useAuth } from "../context/AuthContext";
 import DashboardLayout from "../layouts/DashboardLayout";
-import { Upload, ScanSearch, Leaf, Award } from "lucide-react";
+import {
+  Upload,
+  ScanSearch,
+  Leaf,
+  Award,
+  Camera,
+  Image as ImageIcon,
+} from "lucide-react";
 import { useHistory } from "../context/HistoryContext";
 import { analyzeWasteImage } from "../services/gemini";
 import { supabase } from "../lib/supabase";
+import CameraCapture from "../components/CameraCapture";
 
 const fileToBase64 = (file) =>
   new Promise((resolve, reject) => {
@@ -28,11 +36,15 @@ export default function Scan() {
   const { addScan } = useHistory();
   const { user } = useAuth();
 
+  const fileInputRef = useRef(null);
+
   const [image, setImage] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisComplete, setAnalysisComplete] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [result, setResult] = useState(null);
+  const [showOptions, setShowOptions] = useState(false);
+  const [showCamera, setShowCamera] = useState(false);
 
   const analysisSteps = [
     "Uploading Image...",
@@ -42,9 +54,7 @@ export default function Scan() {
     "Finalizing Analysis...",
   ];
 
-  const handleImage = async (e) => {
-    const file = e.target.files[0];
-
+  const processFile = async (file) => {
     if (!file) return;
 
     setImage(URL.createObjectURL(file));
@@ -130,6 +140,16 @@ export default function Scan() {
     }
   };
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    processFile(file);
+  };
+
+  const handleCameraCapture = (file) => {
+    setShowCamera(false);
+    processFile(file);
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-8">
@@ -138,7 +158,7 @@ export default function Scan() {
           <h1 className="text-4xl font-bold">Scan Waste</h1>
 
           <p className="text-gray-400 mt-2">
-            Upload an image and let EcoLoop identify it.
+            Snap a photo or upload an image and let EcoLoop identify it.
           </p>
         </div>
 
@@ -153,7 +173,9 @@ export default function Scan() {
                 <div className="text-center">
                   <Upload size={50} className="mx-auto text-gray-500" />
 
-                  <p className="text-gray-500 mt-4">Upload an image to begin</p>
+                  <p className="text-gray-500 mt-4">
+                    Take a photo or upload an image
+                  </p>
                 </div>
               </div>
             ) : (
@@ -211,7 +233,7 @@ export default function Scan() {
 
             {!image && (
               <div className="h-[500px] flex items-center justify-center text-gray-500">
-                Upload an image to begin analysis
+                Take a photo or upload an image to begin analysis
               </div>
             )}
 
@@ -314,13 +336,58 @@ export default function Scan() {
           </div>
         </div>
 
-        {/* UPLOAD */}
-        <label className="flex items-center justify-center gap-3 py-4 rounded-2xl bg-emerald-500 text-black font-semibold cursor-pointer hover:bg-emerald-400 transition">
-          <Upload size={20} />
-          Upload Waste Image
-          <input type="file" hidden accept="image/*" onChange={handleImage} />
-        </label>
+        {/* CAPTURE OPTIONS */}
+        <div className="relative">
+          <button
+            onClick={() => setShowOptions((prev) => !prev)}
+            className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl bg-emerald-500 text-black font-semibold cursor-pointer hover:bg-emerald-400 transition"
+          >
+            <Camera size={20} />
+            Scan Waste Image
+          </button>
+
+          {showOptions && (
+            <div className="absolute bottom-full mb-2 left-0 right-0 bg-zinc-900 border border-white/10 rounded-2xl overflow-hidden shadow-xl z-20">
+              <button
+                onClick={() => {
+                  setShowOptions(false);
+                  setShowCamera(true);
+                }}
+                className="w-full flex items-center gap-3 px-5 py-4 hover:bg-white/5 transition"
+              >
+                <Camera size={20} className="text-emerald-400" />
+                Take Photo
+              </button>
+
+              <button
+                onClick={() => {
+                  setShowOptions(false);
+                  fileInputRef.current?.click();
+                }}
+                className="w-full flex items-center gap-3 px-5 py-4 hover:bg-white/5 transition border-t border-white/10"
+              >
+                <ImageIcon size={20} className="text-emerald-400" />
+                Upload from Gallery
+              </button>
+            </div>
+          )}
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            hidden
+            accept="image/*"
+            onChange={handleFileChange}
+          />
+        </div>
       </div>
+
+      {showCamera && (
+        <CameraCapture
+          onCapture={handleCameraCapture}
+          onClose={() => setShowCamera(false)}
+        />
+      )}
     </DashboardLayout>
   );
 }
