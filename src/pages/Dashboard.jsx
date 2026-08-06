@@ -72,7 +72,7 @@ export default function Dashboard() {
         </section>
 
         {/* STATS */}
-        <section className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
             <div className="flex items-center justify-between">
               <Leaf className="text-emerald-400" />
