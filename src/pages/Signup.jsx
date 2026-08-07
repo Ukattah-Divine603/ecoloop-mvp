@@ -11,11 +11,13 @@ import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 
 import { useAuth } from "../context/AuthContext";
+import { useNotifications } from "../context/NotificationContext";
 
 export default function Signup() {
   const navigate = useNavigate();
 
   const { signup } = useAuth();
+  const { addNotification } = useNotifications();
 
   const [loading, setLoading] = useState(false);
 
@@ -49,7 +51,8 @@ export default function Signup() {
 
       await signup(form.email, form.password, form.name);
 
-      toast.success("Account created. Check your email ✨");
+      addNotification("Your account was created. Check your email to confirm.");
+      toast.success("New Notification!");
 
       navigate("/");
     } catch (err) {
@@ -155,6 +158,7 @@ export default function Signup() {
                 {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
+
             <button
               disabled={loading}
               className="w-full py-4 rounded-xl bg-emerald-500 text-black font-semibold flex items-center justify-center"

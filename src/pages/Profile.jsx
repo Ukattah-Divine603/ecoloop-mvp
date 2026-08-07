@@ -3,18 +3,31 @@ import DashboardLayout from "../layouts/DashboardLayout";
 import { useAuth } from "../context/AuthContext";
 import { usePoints } from "../context/PointsContext";
 import { useHistory } from "../context/HistoryContext";
-import { getLevel, getProgress } from "../utils/level"; 
-import { LogOut, Mail, Recycle, Leaf, TrendingUp, Camera } from "lucide-react";
+import { useNotifications } from "../context/NotificationContext";
+import { getLevel, getProgress } from "../utils/level";
+import {
+  LogOut,
+  Mail,
+  Recycle,
+  Leaf,
+  TrendingUp,
+  Camera,
+  Image as ImageIcon,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import CameraCapture from "../components/CameraCapture";
 
 export default function Profile() {
   const { user, logout } = useAuth();
   const { points, avatarUrl, updateAvatar, fullName } = usePoints();
   const { history } = useHistory();
+  const { addNotification } = useNotifications();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
+  const [showOptions, setShowOptions] = useState(false);
+  const [showCamera, setShowCamera] = useState(false);
 
   const level = getLevel(points);
   const progress = getProgress(points);
@@ -25,15 +38,12 @@ export default function Profile() {
 
   async function handleLogout() {
     await logout();
-    toast.success("Logged out");
+    addNotification("You've been logged out.");
+    toast.success("New Notification!");
     navigate("/login");
   }
 
-  async function handleAvatarChange(e) {
-    const file = e.target.files[0];
-
-    if (!file) return;
-
+  async function uploadFile(file) {
     setUploading(true);
 
     const url = await updateAvatar(file);
@@ -41,10 +51,27 @@ export default function Profile() {
     setUploading(false);
 
     if (url) {
-      toast.success("Profile picture updated");
+      addNotification("Your profile picture was updated successfully.");
+      toast.success("New Notification!");
     } else {
-      toast.error("Failed to update profile picture");
+      addNotification(
+        "Failed to update your profile picture. Please try again.",
+      );
+      toast.error("New Notification!");
     }
+  }
+
+  async function handleFileChange(e) {
+    const file = e.target.files[0];
+
+    if (!file) return;
+
+    await uploadFile(file);
+  }
+
+  async function handleCameraCapture(file) {
+    setShowCamera(false);
+    await uploadFile(file);
   }
 
   return (
@@ -62,7 +89,7 @@ export default function Profile() {
         {/* PROFILE CARD */}
         <div className="bg-white/5 border border-white/10 rounded-3xl p-8">
           <div className="flex items-center gap-6">
-            <div className="relative group">
+            <div className="relative">
               <div className="w-20 h-20 rounded-full overflow-hidden bg-emerald-500 flex items-center justify-center text-3xl font-bold text-black">
                 {avatarUrl ? (
                   <img
@@ -76,19 +103,45 @@ export default function Profile() {
               </div>
 
               <button
-                onClick={() => fileInputRef.current?.click()}
+                onClick={() => setShowOptions((prev) => !prev)}
                 disabled={uploading}
                 className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-emerald-500 border-2 border-zinc-950 flex items-center justify-center hover:bg-emerald-400 transition"
               >
                 <Camera size={14} className="text-black" />
               </button>
 
+              {showOptions && (
+                <div className="absolute top-full mt-2 left-0 bg-zinc-900 border border-white/10 rounded-xl overflow-hidden z-20 w-44 shadow-xl">
+                  <button
+                    onClick={() => {
+                      setShowOptions(false);
+                      setShowCamera(true);
+                    }}
+                    className="w-full flex items-center gap-2 px-4 py-3 hover:bg-white/5 transition text-sm"
+                  >
+                    <Camera size={16} />
+                    Take Photo
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setShowOptions(false);
+                      fileInputRef.current?.click();
+                    }}
+                    className="w-full flex items-center gap-2 px-4 py-3 hover:bg-white/5 transition text-sm border-t border-white/10"
+                  >
+                    <ImageIcon size={16} />
+                    Upload Photo
+                  </button>
+                </div>
+              )}
+
               <input
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
                 hidden
-                onChange={handleAvatarChange}
+                onChange={handleFileChange}
               />
             </div>
 
@@ -169,6 +222,13 @@ export default function Profile() {
           Log Out
         </button>
       </div>
+
+      {showCamera && (
+        <CameraCapture
+          onCapture={handleCameraCapture}
+          onClose={() => setShowCamera(false)}
+        />
+      )}
     </DashboardLayout>
   );
 }

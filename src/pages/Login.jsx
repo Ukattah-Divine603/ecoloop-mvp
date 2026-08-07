@@ -8,11 +8,13 @@ import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 
 import { useAuth } from "../context/AuthContext";
+import { useNotifications } from "../context/NotificationContext";
 
 export default function Login() {
   const navigate = useNavigate();
 
   const { login } = useAuth();
+  const { addNotification } = useNotifications();
 
   const [loading, setLoading] = useState(false);
 
@@ -30,7 +32,8 @@ export default function Login() {
 
       await login(email, password);
 
-      toast.success("Welcome back 🌱");
+      addNotification("You've successfully logged in. Welcome back!");
+      toast.success("New Notification!");
 
       navigate("/");
     } catch (err) {
