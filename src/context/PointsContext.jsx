@@ -58,11 +58,11 @@ export function PointsProvider({ children }) {
 
     try {
       const fileExt = file.name.split(".").pop();
-      const filePath = `${user.id}/avatar.${fileExt}`;
+      const filePath = `${user.id}/avatar-${Date.now()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
-        .from("avatars")
-        .upload(filePath, file, { upsert: true });
+        .from("scan-images")
+        .upload(filePath, file);
 
       if (uploadError) {
         console.error("Avatar upload error:", uploadError);
@@ -70,10 +70,10 @@ export function PointsProvider({ children }) {
       }
 
       const { data: publicUrlData } = supabase.storage
-        .from("avatars")
+        .from("scan-images")
         .getPublicUrl(filePath);
 
-      const url = `${publicUrlData.publicUrl}?t=${Date.now()}`;
+      const url = publicUrlData.publicUrl;
 
       const { error: updateError } = await supabase
         .from("profiles")
