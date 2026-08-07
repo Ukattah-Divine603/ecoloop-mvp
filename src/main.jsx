@@ -3,6 +3,7 @@ import { BrowserRouter } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { PointsProvider } from "./context/PointsContext";
 import { HistoryProvider } from "./context/HistoryContext";
+import { NotificationProvider } from "./context/NotificationContext";
 import App from "./App";
 import "./index.css";
 
@@ -13,18 +14,20 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <AuthProvider>
       <PointsProvider>
         <HistoryProvider>
-          <App />
+          <NotificationProvider>
+            <App />
 
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              style: {
-                background: "#18181b",
-                color: "#fff",
-                border: "1px solid rgba(255,255,255,.1)",
-              },
-            }}
-          />
+            <Toaster
+              position="top-right"
+              toastOptions={{
+                style: {
+                  background: "#18181b",
+                  color: "#fff",
+                  border: "1px solid rgba(255,255,255,.1)",
+                },
+              }}
+            />
+          </NotificationProvider>
         </HistoryProvider>
       </PointsProvider>
     </AuthProvider>

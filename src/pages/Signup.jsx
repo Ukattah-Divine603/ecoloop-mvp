@@ -155,12 +155,15 @@ export default function Signup() {
                 {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
-
             <button
               disabled={loading}
-              className="w-full py-4 rounded-xl bg-emerald-500 text-black font-semibold"
+              className="w-full py-4 rounded-xl bg-emerald-500 text-black font-semibold flex items-center justify-center"
             >
-              {loading ? "Creating..." : "Create Account"}
+              {loading ? (
+                <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+              ) : (
+                "Create Account"
+              )}
             </button>
           </form>
 

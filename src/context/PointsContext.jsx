@@ -61,7 +61,7 @@ export function PointsProvider({ children }) {
       const filePath = `${user.id}/avatar-${Date.now()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
-        .from("scan-images")
+        .from("avatars")
         .upload(filePath, file);
 
       if (uploadError) {
@@ -70,7 +70,7 @@ export function PointsProvider({ children }) {
       }
 
       const { data: publicUrlData } = supabase.storage
-        .from("scan-images")
+        .from("avatars")
         .getPublicUrl(filePath);
 
       const url = publicUrlData.publicUrl;

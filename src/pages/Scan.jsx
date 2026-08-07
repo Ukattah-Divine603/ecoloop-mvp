@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import { usePoints } from "../context/PointsContext";
 import { useAuth } from "../context/AuthContext";
+import { useNotifications } from "../context/NotificationContext";
 import DashboardLayout from "../layouts/DashboardLayout";
 import {
   Upload,
@@ -16,6 +17,7 @@ import { useHistory } from "../context/HistoryContext";
 import { analyzeWasteImage } from "../services/gemini";
 import { supabase } from "../lib/supabase";
 import CameraCapture from "../components/CameraCapture";
+import { getLevel } from "../utils/level";
 
 const fileToBase64 = (file) =>
   new Promise((resolve, reject) => {
@@ -32,9 +34,10 @@ const fileToBase64 = (file) =>
   });
 
 export default function Scan() {
-  const { addPoints } = usePoints();
+  const { points, addPoints } = usePoints();
   const { addScan } = useHistory();
   const { user } = useAuth();
+  const { addNotification } = useNotifications();
 
   const fileInputRef = useRef(null);
 
@@ -114,7 +117,6 @@ export default function Scan() {
           imageUrl = publicUrlData.publicUrl;
         }
       }
-
       await addPoints(aiResult.points);
 
       await addScan({
@@ -128,9 +130,19 @@ export default function Scan() {
 
       setAnalysisComplete(true);
 
-      toast.success(`+${aiResult.points} Eco Points Earned`);
+      const newTotal = points + aiResult.points;
+      const level = getLevel(newTotal);
+      const xpToNext = level.max === Infinity ? null : level.max - newTotal + 1;
 
-      toast.success("Scan Saved Successfully");
+      addNotification(
+        `+${aiResult.points} Eco Points earned from scanning ${aiResult.material}.${
+          xpToNext !== null
+            ? ` ${xpToNext} XP to reach the next level.`
+            : " You're at the top level!"
+        }`,
+      );
+
+      toast.success("New Notification!");
     } catch (error) {
       console.error(error);
 
