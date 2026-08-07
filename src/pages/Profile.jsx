@@ -3,7 +3,7 @@ import DashboardLayout from "../layouts/DashboardLayout";
 import { useAuth } from "../context/AuthContext";
 import { usePoints } from "../context/PointsContext";
 import { useHistory } from "../context/HistoryContext";
-import { getLevel, getProgress } from "../utils/level";
+import { getLevel, getProgress } from "../utils/level"; 
 import { LogOut, Mail, Recycle, Leaf, TrendingUp, Camera } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
