@@ -13,6 +13,7 @@ import {
   TrendingUp,
   Camera,
   Image as ImageIcon,
+  X,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -28,6 +29,7 @@ export default function Profile() {
   const [uploading, setUploading] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
 
   const level = getLevel(points);
   const progress = getProgress(points);
@@ -90,7 +92,12 @@ export default function Profile() {
         <div className="bg-white/5 border border-white/10 rounded-3xl p-8">
           <div className="flex items-center gap-6">
             <div className="relative">
-              <div className="w-20 h-20 rounded-full overflow-hidden bg-emerald-500 flex items-center justify-center text-3xl font-bold text-black">
+              <div
+                onClick={() => avatarUrl && setShowPreview(true)}
+                className={`w-20 h-20 rounded-full overflow-hidden bg-emerald-500 flex items-center justify-center text-3xl font-bold text-black ${
+                  avatarUrl ? "cursor-pointer" : ""
+                }`}
+              >
                 {avatarUrl ? (
                   <img
                     src={avatarUrl}
@@ -228,6 +235,27 @@ export default function Profile() {
           onCapture={handleCameraCapture}
           onClose={() => setShowCamera(false)}
         />
+      )}
+
+      {showPreview && avatarUrl && (
+        <div
+          onClick={() => setShowPreview(false)}
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+        >
+          <button
+            onClick={() => setShowPreview(false)}
+            className="absolute top-6 right-6 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20"
+          >
+            <X size={20} />
+          </button>
+
+          <img
+            src={avatarUrl}
+            alt="Profile preview"
+            onClick={(e) => e.stopPropagation()}
+            className="max-w-full max-h-full rounded-2xl object-contain"
+          />
+        </div>
       )}
     </DashboardLayout>
   );
